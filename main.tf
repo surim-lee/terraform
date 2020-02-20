@@ -283,46 +283,32 @@ resource "aws_alb_target_group_attachment" "Dev_Back2" {
   port             = 8080
 }
 
-resource "aws_alb" "Dev_external" {
-    name     = "Dev-external"
-    subnets         = [aws_subnet.Dev_public1.id, aws_subnet.Dev_public2.id]
-    security_groups = [aws_security_group.Dev_sg1.id]
-    instances       = [aws_instance.Dev_Front1.id, aws_instance.Dev_Front2.id]
-
-    listener {
-        instance_port       = 80
-        instance_protocol   = "http"
-        lb_port             = 80
-        lb_protocol         = "http"
-    }
+resource "aws_lb" "Dev_external" {
+  name                  = "Dev-external"
+  load_balancer_type    = "application"
+  subnets               = [aws_subnet.Dev_public1.id, aws_subnet.Dev_public2.id]
+  security_groups       = [aws_security_group.Dev_sg1.id]
 }
 
-resource "aws_alb" "Dev_internal" {
-    name            = "Dev-internal"
-    internal        = true
-    subnets         = [aws_subnet.Dev_private1.id, aws_subnet.Dev_private2.id]
-    security_groups = [aws_security_group.Dev_sg3.id]
-    instances       = [aws_instance.Dev_Back1.id, aws_instance.Dev_Back2.id]
-
-    listener {
-        instance_port       = 8080
-        instance_protocol   = "http"
-        lb_port             = 8080
-        lb_protocol         = "http"
-    }
+resource "aws_lb" "Dev_internal" {
+  name                    = "Dev-internal"
+  internal                = true
+  load_balancer_type      = "application"
+  subnets                 = [aws_subnet.Dev_private1.id, aws_subnet.Dev_private2.id]
+  security_groups         = [aws_security_group.Dev_sg3.id]
 }
 
 resource "aws_db_instance" "Dev_db" {
-    allocated_storage    = 20
-    engine               = "mysql"
-    engine_version       = "5.7.26"
-    instance_class       = "db.t2.micro"
-    username             = var.db_username
-    password             = var.db_password
-    port                 = var.db_port
-    vpc_security_group_ids = [aws_security_group.Dev_sg_db.id]
-    skip_final_snapshot    = true
-    multi_az               = true
+  allocated_storage    = 20
+  engine               = "mysql"
+  engine_version       = "5.7.26"
+  instance_class       = "db.t2.micro"
+  username             = var.db_username
+  password             = var.db_password
+  port                 = var.db_port
+  vpc_security_group_ids = [aws_security_group.Dev_sg_db.id]
+  skip_final_snapshot    = true
+  multi_az               = true
 }
 
 
@@ -332,7 +318,7 @@ resource "aws_launch_template" "Front-end" {
   instance_type        = "t2.micro"
 
   placement {
-    availability_zones          = ["ap-northeast-2a", "ap-northeast-2c"]
+    availability_zone          = "ap-northeast-2a"
   }
 }
 
@@ -347,31 +333,6 @@ resource "aws_autoscaling_group" "front_auto" {
 
   launch_template {
     id         = aws_launch_template.Front-end.id
-    version    = "latest"
-  }
-}
-
-resource "aws_launch_template" "Back-end" {
-  name                 = "Back-end"
-  image_id             = var.image_id_back
-  instance_type        = "t2.micro"
-
-  placement {
-    availability_zones          = ["ap-northeast-2a", "ap-northeast-2c"]
-  }
-}
-
-resource "aws_autoscaling_group" "back_auto" {
-  name                        = "back_auto"
-  desired_capacity            = 4
-  max_size                    = 2
-  min_size                    = 1
-  health_check_grace_period   = 300
-  health_check_type           = "ELB"
-  availability_zones          = ["ap-northeast-2a", "ap-northeast-2c"]
-
-  launch_template {
-    id         = aws_launch_template.Back-end.id
     version    = "latest"
   }
 }
