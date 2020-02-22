@@ -3,6 +3,11 @@ variable "key_name" {
     default = "surim"
 }
 
+variable "igw" {
+    type     = string
+    default  = "igw-b2f946da"
+}
+
 variable "my_access_key" {
     type    = string
 }
@@ -18,12 +23,12 @@ variable "my_region" {
 
 variable "image_id_front" {
     type    = string
-    default = "ami-078ae4b88448bd357"
+    default = "ami-0718a49b3b9b8ec56"
 }
 
 variable "image_id_back" {
     type    = string
-    default = "ami-"
+    default = "ami-0673a96e1c4e807fb"
 }
 
 variable "target_group_path" {
